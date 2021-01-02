@@ -1,0 +1,45 @@
+﻿http://localhost:3333
+
+###
+
+// Find All
+http://localhost:3333/user
+
+###
+// Find by email
+http://localhost:3333/user/email/email@email.com
+
+###
+// Create a new user
+POST http://localhost:3333/user HTTP/1.1
+content-type: application/json
+
+{
+    "name": "sample",
+    "email": "email@email.com",
+    "password": "123123"
+}
+
+###
+// Update User
+PUT http://localhost:3333/user HTTP/1.1
+content-type: application/json
+
+{
+    "originalEmail": "email@email.com",
+    "user": { 
+        "name": "Not a Sample",
+        "email": "AnotherEmail@email.com",
+        "password": "UwU"
+    }
+}
+
+###
+// Delete User
+DELETE http://localhost:3333/user
+content-type: application/json
+
+{
+    "email": "AnotherEmail@email.com"
+}
+
