@@ -32,6 +32,10 @@ export class Product {
   public getId (): string {
     return this._id;
   }
+  
+  public getImage (): string {
+    return this.image;
+  }
 
   private randomImage (): string {
     const randomArbitrary = ( min, max ) => Math.floor( Math.random() * ( max - min ) + min );

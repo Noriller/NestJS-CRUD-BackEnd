@@ -3,6 +3,7 @@ import { Product } from './entities/Product';
 import { ProductDTO } from './entities/Product.dto';
 import { MongoProductRepository } from './repositories/implementation/MongoProductRepository';
 import { ProductService } from './product.service';
+import { validate as uuidValidate } from 'uuid';
 
 describe( 'Product Service', () => {
 
@@ -119,8 +120,27 @@ describe( 'Product Service', () => {
     }
   } );
 
-  test.todo( 'should create random image if none is provided' );
-  test.todo( 'should create random ID if none is provided' )
+  it( 'should create a random image if none is provided', async () => {
+    jest.spyOn( repository, 'saveProduct' ).mockImplementation( jestMockImplementation_SaveProduct( mockMongoResults ) );
+
+    const aNewProduct: ProductDTO = { ...aNewProductTemplate };
+    aNewProduct.image = null;
+    const productSaved = await service.saveProduct( aNewProduct );
+
+    expect( productSaved.getImage() ).toMatch( 'https://picsum.photos/' );
+  } );
+
+  it( 'should create a random ID if none is provided', async () => {
+    jest.spyOn( repository, 'saveProduct' ).mockImplementation( jestMockImplementation_SaveProduct( mockMongoResults ) );
+
+    const aNewProduct: ProductDTO = { ...aNewProductTemplate };
+    aNewProduct.id = null;
+    const productSaved = await service.saveProduct( aNewProduct );
+
+    expect( productSaved.getId() ).not.toBe( aNewProduct.id );
+    expect( productSaved.getId() ).not.toBeNull();
+    expect( uuidValidate( productSaved.getId() ) ).toBe( true );
+  } );
 
   it( 'should throw if failed to save', async () => {
     jest.spyOn( repository, 'saveProduct' ).mockImplementation( async ( product: Product ) => null );
@@ -157,150 +177,155 @@ describe( 'Product Service', () => {
     }
   } );
 
-  // it( 'should find a product using a email', async () => {
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+  it( 'should find a product using an id', async () => {
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  //   const lookupMock: Product = mockArrayTemplate[ 0 ];
+    const lookupMock: Product = mockArrayTemplate[ 0 ];
 
-  //   const productFound = await service.findProductById( lookupMock.getId() );
-  //   const comparation = JSON.stringify( productFound ) == JSON.stringify( lookupMock );
-  //   expect( comparation ).toBe( true );
-  // } );
+    const productFound = await service.findProductById( lookupMock.getId() );
+    expect( productFound ).toBe( lookupMock );
+  } );
 
-  // it( 'should throw error when not passing a email', async () => {
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+  it( 'should throw error when not passing an id', async () => {
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  //   try {
-  //     const productFound = await service.findProductById( null );
-  //     expect( productFound ).toThrow();
-  //   } catch ( error ) {
-  //     expect( error.message ).toBe( `ID cannot be empty.` );
-  //   }
-  // } );
+    try {
+      const productFound = await service.findProductById( null );
+      expect( productFound ).toThrow();
+    } catch ( error ) {
+      expect( error.message ).toBe( `ID cannot be empty.` );
+    }
+  } );
 
-  // it( 'should throw error when a product is not found', async () => {
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+  it( 'should throw error when a product is not found', async () => {
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  //   try {
-  //     const productFound = await service.findProductById( 'notInDatabase@email.com' );
-  //     expect( productFound ).toThrow();
-  //   } catch ( error ) {
-  //     expect( error.message ).toBe( `Product not found.` );
-  //   }
-  // } );
+    try {
+      const productFound = await service.findProductById( 'notInDatabase' );
+      expect( productFound ).toThrow();
+    } catch ( error ) {
+      expect( error.message ).toBe( `Product not found.` );
+    }
+  } );
 
-  // it( 'should update an existing product', async () => {
-  //   jest.spyOn( repository, 'updateProductById' ).mockImplementation( jestMockImplementation_UpdateProductById( mockMongoResults ) );
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+  it( 'should update an existing product', async () => {
+    jest.spyOn( repository, 'updateProductById' ).mockImplementation( jestMockImplementation_UpdateProductById( mockMongoResults ) );
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  //   const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
-  //   const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
-  //   expect( mockMongoResults ).toContain( productUpdated );
-  // } );
+    const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
+    const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
+    expect( mockMongoResults ).toContain( productUpdated );
+  } );
 
-  // it( 'should update an existing product while passing an id', async () => {
-  //   jest.spyOn( repository, 'updateProductById' ).mockImplementation( jestMockImplementation_UpdateProductById( mockMongoResults ) );
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+  it( 'should update an existing product while passing an id', async () => {
+    jest.spyOn( repository, 'updateProductById' ).mockImplementation( jestMockImplementation_UpdateProductById( mockMongoResults ) );
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  //   const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
-  //   anUpdatedVersionOfProduct.id = mockMongoResults[ 0 ].getId();
+    const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
+    anUpdatedVersionOfProduct.id = mockMongoResults[ 0 ].getId();
 
-  //   const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
-  //   expect( mockMongoResults ).toContain( productUpdated );
-  // } );
+    const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
+    expect( mockMongoResults ).toContain( productUpdated );
+  } );
 
-  // xit( 'should throw if not passing originalEmail when trying to update', async () => {
-  //   jest.spyOn( repository, 'updateProductById' ).mockImplementation( jestMockImplementation_UpdateProductById( mockMongoResults ) );
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+  it( 'should throw on update when not passing an id', async () => {
+    jest.spyOn( repository, 'updateProductById' ).mockImplementation( jestMockImplementation_UpdateProductById( mockMongoResults ) );
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  //   const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
-  //   try {
-  //     const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
-  //     expect( productUpdated ).toThrow();
-  //   } catch ( error ) {
-  //     expect( error.message ).toBe( 'Must provide original email.' );
-  //   }
-  // } );
+    const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
+    anUpdatedVersionOfProduct.id = null;
 
-  // xit( 'should throw on error while updating', async () => {
-  //   jest.spyOn( repository, 'updateProductById' ).mockImplementation( async ( product: Product ) => null );
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+    try {
+      const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
+      expect( productUpdated ).toThrow();
+    } catch ( error ) {
+      expect( error.message ).toBe( 'Must provide ID.' );
+    }
+  } );
 
-  //   const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
-  //   try {
-  //     const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
-  //     expect( productUpdated ).toThrow();
-  //   } catch ( error ) {
-  //     expect( error.message ).toBe( 'Server Error while saving data.' );
-  //   }
-  // } );
+  it( 'should throw on update when passing id not in database', async () => {
+    jest.spyOn( repository, 'updateProductById' ).mockImplementation( jestMockImplementation_UpdateProductById( mockMongoResults ) );
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  // xit( 'should give the updated version of the product', async () => {
-  //   jest.spyOn( repository, 'updateProductById' ).mockImplementation( jestMockImplementation_UpdateProductById( mockMongoResults ) );
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+    const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
+    anUpdatedVersionOfProduct.id = 'aRandomId';
 
-  //   const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
-  //   const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
+    try {
+      const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
+      expect( productUpdated ).toThrow();
+    } catch ( error ) {
+      expect( error.message ).toBe( 'Product not found.' );
+    }
+  } );
 
-  //   // expect( productUpdated.getEmail() ).toBe( anUpdatedVersionOfProductTemplate.email );
-  //   // expect( productUpdated.getName() ).toBe( anUpdatedVersionOfProductTemplate.name );
-  //   // expect( productUpdated.getId() ).toBe( "6fc56932-a379-4457-9082-cc4966b7a1f3" );
-  // } );
+  it( 'should throw an error while updating', async () => {
+    jest.spyOn( repository, 'updateProductById' ).mockImplementation( async ( product: Product ) => null );
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  // xit( 'should encrypt the password while updating', async () => {
-  //   jest.spyOn( repository, 'deleteProductById' ).mockImplementation( jestMockImplementation_DeleteProductById( mockMongoResults ) );
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+    const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
+    try {
+      const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
+      expect( productUpdated ).toThrow();
+    } catch ( error ) {
+      expect( error.message ).toBe( 'Server Error while saving data.' );
+    }
+  } );
 
-  //   const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
-  //   const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
-  // } );
+  it( 'should give the updated version of the product', async () => {
+    jest.spyOn( repository, 'updateProductById' ).mockImplementation( jestMockImplementation_UpdateProductById( mockMongoResults ) );
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  // it( 'should delete a product', async () => {
-  //   jest.spyOn( repository, 'deleteProductById' ).mockImplementation( jestMockImplementation_DeleteProductById( mockMongoResults ) );
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+    const anUpdatedVersionOfProduct = { ...anUpdatedVersionOfProductTemplate };
+    const productUpdated = await service.updateProductById( anUpdatedVersionOfProduct );
 
-  //   const deletedProduct = await service.deleteProductById( "fakeID" );
-  //   expect( mockMongoResults ).not.toContain( deletedProduct );
-  //   expect( mockMongoResults.length ).toBe( 2 );
-  //   expect( mockArrayTemplate.length ).toBe( 3 );
-  // } );
+    expect( productUpdated ).toStrictEqual( new Product( anUpdatedVersionOfProduct ) );
+  } );
 
-  // it( 'should throw if not passing an ID while deleting', async () => {
-  //   jest.spyOn( repository, 'deleteProductById' ).mockImplementation( jestMockImplementation_DeleteProductById( mockMongoResults ) );
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+  it( 'should delete a product', async () => {
+    jest.spyOn( repository, 'deleteProductById' ).mockImplementation( jestMockImplementation_DeleteProductById( mockMongoResults ) );
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  //   try {
-  //     const deletedProduct = await service.deleteProductById( "" );
-  //     expect( deletedProduct ).toThrow();
-  //   } catch ( error ) {
-  //     expect( error.message ).toBe( 'ID cannot be empty.' );
-  //   }
-  // } );
+    const deletedProduct = await service.deleteProductById( "fakeID" );
+    expect( mockMongoResults ).not.toContain( deletedProduct );
+    expect( mockMongoResults.length ).toBe( 2 );
+    expect( mockArrayTemplate.length ).toBe( 3 );
+  } );
 
-  // it( 'should throw if product could not be found by ID while trying to deleted', async () => {
-  //   jest.spyOn( repository, 'deleteProductById' ).mockImplementation( async ( id: string ) => null );
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+  it( 'should throw if not passing an ID while deleting', async () => {
+    jest.spyOn( repository, 'deleteProductById' ).mockImplementation( jestMockImplementation_DeleteProductById( mockMongoResults ) );
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  //   try {
-  //     const deletedProduct = await service.deleteProductById( "fakeInvalid" );
-  //     expect( deletedProduct ).toThrow();
-  //   } catch ( error ) {
-  //     expect( error.message ).toBe( 'Product not found.' );
-  //   }
-  // } );
+    try {
+      const deletedProduct = await service.deleteProductById( "" );
+      expect( deletedProduct ).toThrow();
+    } catch ( error ) {
+      expect( error.message ).toBe( 'ID cannot be empty.' );
+    }
+  } );
 
-  // it( 'should throw if product could not be deleted', async () => {
-  //   jest.spyOn( repository, 'deleteProductById' ).mockImplementation( async ( id: string ) => null );
-  //   jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+  it( 'should throw if product could not be found by ID while trying to deleted', async () => {
+    jest.spyOn( repository, 'deleteProductById' ).mockImplementation( async ( id: string ) => null );
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
 
-  //   try {
-  //     const deletedProduct = await service.deleteProductById( "fakeID" );
-  //     expect( deletedProduct ).toThrow();
-  //   } catch ( error ) {
-  //     expect( error.message ).toBe( 'Product could not be deleted.' );
-  //   }
-  // } );
+    try {
+      const deletedProduct = await service.deleteProductById( "fakeInvalid" );
+      expect( deletedProduct ).toThrow();
+    } catch ( error ) {
+      expect( error.message ).toBe( 'Product not found.' );
+    }
+  } );
 
+  it( 'should throw if product could not be deleted', async () => {
+    jest.spyOn( repository, 'deleteProductById' ).mockImplementation( async ( id: string ) => null );
+    jest.spyOn( repository, 'findProductById' ).mockImplementation( jestMockImplementation_FindProductById( mockMongoResults ) );
+
+    try {
+      const deletedProduct = await service.deleteProductById( "fakeID" );
+      expect( deletedProduct ).toThrow();
+    } catch ( error ) {
+      expect( error.message ).toBe( 'Product could not be deleted.' );
+    }
+  } );
 
 } );
 

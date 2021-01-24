@@ -52,10 +52,7 @@ export class ProductService implements IProductServiceAbstraction {
     if ( !newProductInfo.id )
       throw new BadRequestException( 'Must provide ID.' );
 
-    const productFound = await this.findProductById( newProductInfo.id );
-
-    if ( !productFound )
-      throw new NotFoundException( 'Product not found.' );
+    const tryToFindProduct = await this.findProductById( newProductInfo.id );
 
     const productToUpdate = new Product( newProductInfo );
 
