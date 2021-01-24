@@ -24,18 +24,19 @@ describe( 'Mongo Product Service', () => {
     model = module.get<Model<ProductDocument>>( getModelToken( 'Product' ) );
   } );
 
-  it( 'should be defined', () => {
-    expect( service ).toBeDefined();
-  } );
-
   afterEach( () => {
     jest.clearAllMocks();
+  } );
+
+  it( 'should be defined', () => {
+    expect( service ).toBeDefined();
   } );
 
   it( 'should return mockArray', async () => {
     jest.spyOn( model, 'find' ).mockReturnValue( jestMockResolvedValue_Exec( mockArrayMongo ) );
     const mocks = await service.findAllProducts();
     expect( mocks ).toEqual( mockArrayProduct );
+    expect( mocks.length ).toEqual( mockArrayProduct.length );
   } );
 
   it( 'should find one by id', async () => {
@@ -50,18 +51,6 @@ describe( 'Mongo Product Service', () => {
     expect( foundMock ).toEqual( null );
   } );
 
-  it( 'should find one by email', async () => {
-    jest.spyOn( model, 'findOne' ).mockReturnValue( jestMockResolvedValue_Exec( mockMongoFormat ) );
-    const foundMock = await service.findProductByEmail( mockProductFormat.getEmail() );
-    expect( foundMock ).toEqual( mockProductFormat );
-  } );
-
-  it( 'should return null trying to find by email that does not exist', async () => {
-    jest.spyOn( model, 'findOne' ).mockReturnValue( jestMockResolvedValue_Exec( null ) );
-    const foundMock = await service.findProductByEmail( mockProductFormat.getEmail() );
-    expect( foundMock ).toEqual( null );
-  } );
-
   it( 'should save new product', async () => {
     jest.spyOn( model, 'create' ).mockImplementation(
       jest.fn().mockResolvedValueOnce( mockMongoFormat )
@@ -71,9 +60,16 @@ describe( 'Mongo Product Service', () => {
   } );
 
   it( 'should find one by id and update', async () => {
-    jest.spyOn( model, 'findOneAndUpdate' ).mockReturnValue( jestMockResolvedValue_Exec( mockMongoFormat ) );
-    const foundMock = await service.updateProductById( mockProductFormat );
-    expect( foundMock ).toEqual( mockProductFormat );
+    const mockUpdatedProductFormat = new Product( {
+      "id": "mockID", "productName": "NEWmockName", "productDescription": "NEWjustAMock", "image": "NEWdummyImage", "productPrice": 33.33
+    } );
+    const mockUpdatedMongoFormat = {
+      "_id": "mockID", "productName": "NEWmockName", "productDescription": "NEWjustAMock", "image": "NEWdummyImage", "productPrice": 33.33
+    };
+    jest.spyOn( model, 'findOneAndUpdate' ).mockReturnValue( jestMockResolvedValue_Exec( mockUpdatedMongoFormat ) );
+    const foundMock = await service.updateProductById( mockUpdatedProductFormat );
+    expect( foundMock ).not.toEqual( mockProductFormat );
+    expect( foundMock ).toEqual( mockUpdatedProductFormat );
   } );
 
   it( 'should find one by id and delete', async () => {
@@ -106,48 +102,30 @@ function jestMockResolvedValue_Exec ( valueToReturn ) {
 }
 
 const mockProductFormat = new Product( {
-  "_id": "6fc56932-a379-4457-9082-cc4966b7a1f3",
-  "name": "FirstFake",
-  "email": "fake1@email.com",
-  "password": "123123",
+  "id": "mockID", "productName": "mockName", "productDescription": "justAMock", "image": "dummyImage", "productPrice": 33.33
 } );
-const mockMongoFormat = new Product( {
-  "_id": "6fc56932-a379-4457-9082-cc4966b7a1f3",
-  "name": "FirstFake",
-  "email": "fake1@email.com",
-  "password": "123123",
-} );
+
+const mockMongoFormat = {
+  "_id": "mockID", "productName": "mockName", "productDescription": "justAMock", "image": "dummyImage", "productPrice": 33.33
+};
+
 
 const mockArrayMongo = [ {
-  "_id": "6fc56932-a379-4457-9082-cc4966b7a1f3",
-  "name": "FirstFake",
-  "email": "fake1@email.com",
-  "password": "123123",
+  "_id": "mockID", "productName": "mockName", "productDescription": "justAMock", "image": "dummyImage", "productPrice": 33.33
 }, {
-  "_id": "1718fc5c-48b6-4fd7-84ff-bc0fb639a178",
-  "name": "SecondFake",
-  "email": "fake2@email.com",
-  "password": "123123",
+    "_id": "secondMock", "productName": "secondMockName", "productDescription": "secondMockDescription", "image": "secondDummyImage", "productPrice": 66.66
 }, {
-  "_id": "19ef970c-66df-4282-9f53-3a0459093126",
-  "name": "LastFake",
-  "email": "fake3@email.com",
-  "password": "123123",
+    "_id": "thirdMock", "productName": "thirdMockName", "productDescription": "thirdMockDescription", "image": "thirdDummyImage", "productPrice": 99.99
 } ];
 
-const mockArrayProduct = [ {
-  "_id": "6fc56932-a379-4457-9082-cc4966b7a1f3",
-  "name": "FirstFake",
-  "email": "fake1@email.com",
-  "password": "123123",
-}, {
-  "_id": "1718fc5c-48b6-4fd7-84ff-bc0fb639a178",
-  "name": "SecondFake",
-  "email": "fake2@email.com",
-  "password": "123123",
-}, {
-  "_id": "19ef970c-66df-4282-9f53-3a0459093126",
-  "name": "LastFake",
-  "email": "fake3@email.com",
-  "password": "123123",
-} ];
+const mockArrayProduct = [
+  new Product( {
+    "id": "mockID", "productName": "mockName", "productDescription": "justAMock", "image": "dummyImage", "productPrice": 33.33
+  } ),
+  new Product( {
+    "id": "secondMock", "productName": "secondMockName", "productDescription": "secondMockDescription", "image": "secondDummyImage", "productPrice": 66.66
+  } ),
+  new Product( {
+    "id": "thirdMock", "productName": "thirdMockName", "productDescription": "thirdMockDescription", "image": "thirdDummyImage", "productPrice": 99.99
+  } )
+];

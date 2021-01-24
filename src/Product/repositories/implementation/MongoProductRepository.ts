@@ -12,19 +12,19 @@ export class MongoProductRepository implements IProductServiceImplementation {
 
   async saveProduct ( product: Product ): Promise<Product> {
     const productCreated = await this.service.create( product );
-    return new Product( productCreated );
+    return this.mongoToProduct( productCreated );
   }
 
   async findProductById ( _id: string ): Promise<Product> {
     const productFound = await this.service.findById( _id ).exec();
-    return productFound ? new Product( productFound ) : null;
+    return productFound ? this.mongoToProduct( productFound ) : null;
   }
 
   async findAllProducts (): Promise<Product[]> {
     const mongoArray = await this.service.find().exec();
     const productArray = [];
     mongoArray.forEach(
-      product => productArray.push( new Product( product ) )
+      product => productArray.push( this.mongoToProduct( product ) )
     );
 
     return productArray;
@@ -32,11 +32,16 @@ export class MongoProductRepository implements IProductServiceImplementation {
 
   async updateProductById ( product: Product ): Promise<Product> {
     const productUpdated = await this.service.findOneAndUpdate( { '_id': product.getId() }, product, { new: true } ).exec();
-    return new Product( productUpdated );
+    return this.mongoToProduct( productUpdated );
   }
 
   async deleteProductById ( _id: string ): Promise<Product> {
     const productDeleted = await this.service.findOneAndDelete( { '_id': _id } ).exec();
-    return new Product( productDeleted );
+    return this.mongoToProduct( productDeleted );
+  }
+
+  private mongoToProduct ( mongoResult ) {
+    mongoResult.id = mongoResult._id;
+    return new Product( mongoResult )
   }
 }

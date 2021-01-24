@@ -14,7 +14,7 @@ export class ProductService implements IProductServiceAbstraction {
 
   async saveProduct ( product: ProductDTO ): Promise<Product> {
     if ( await this.repository.findProductById( product.id ) )
-      throw new BadRequestException( 'Duplicate product.' );
+      throw new BadRequestException( `Duplicate product. Can't save.` );
 
     const productToSave = new Product( product );
 
@@ -49,7 +49,6 @@ export class ProductService implements IProductServiceAbstraction {
   }
 
   async updateProductById ( newProductInfo: ProductDTO ): Promise<Product> {
-    console.log( newProductInfo );
     if ( !newProductInfo.id )
       throw new BadRequestException( 'Must provide ID.' );
 
