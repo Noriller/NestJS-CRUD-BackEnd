@@ -1,0 +1,45 @@
+﻿http://localhost:3333
+
+###
+
+// Find All
+http://localhost:3333/product
+
+###
+// Find by ID
+http://localhost:3333/product/id/5a84cdc9-d4c0-46ff-be5d-245f28826d9e
+
+###
+// Create a new product
+POST http://localhost:3333/product HTTP/1.1
+content-type: application/json
+
+{
+    "id":"5a84cdc9-d4c0-46ff-be5d-245f28826d9e",
+    "productName":"Ventosanzap",
+    "productDescription":"aliquam convallis nunc proin at turpis a pede posuere nonummy integer non velit donec diam neque vestibulum eget vulputate ut ultrices vel augue vestibulum ante ipsum primis in faucibus orci luctus et ultrices",
+    "image":"http://dummyimage.com/443x386.jpg/cc0000/ffffff",
+    "productPrice":33.33
+}
+
+###
+// Update Product
+PUT http://localhost:3333/product HTTP/1.1
+content-type: application/json
+
+{
+    "id":"5a84cdc9-d4c0-46ff-be5d-245f28826d9e",
+    "productName":"Alphazap",
+    "productDescription":"praesent blandit nam nulla integer pede justo lacinia eget tincidunt eget tempus vel pede morbi porttitor lorem id ligula suspendisse ornare consequat lectus in est",
+    "productPrice":33.02
+}
+
+###
+// Delete Product
+DELETE http://localhost:3333/product
+content-type: application/json
+
+{
+    "id": "5a84cdc9-d4c0-46ff-be5d-245f28826d9e"
+}
+
